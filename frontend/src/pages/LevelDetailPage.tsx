@@ -2,13 +2,16 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Editor from "@monaco-editor/react";
 import { fetchLevel, type Level } from "../api/levels";
+import { createSubmission, type Submission } from "../api/submissions";
 
 export default function LevelDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const [level, setLevel] = useState<Level | null>(null);
   const [code, setCode] = useState("");
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [submissionResult, setSubmissionResult] = useState<Submission | null>(null);
 
   useEffect(() => {
     async function loadLevel() {
@@ -32,8 +35,31 @@ export default function LevelDetailPage() {
     loadLevel();
   }, [slug]);
 
+  async function handleSubmit() {
+    if (!level) return;
+
+    setSubmitting(true);
+    setError("");
+    setSubmissionResult(null);
+
+    try {
+      const result = await createSubmission({
+        user: 1,
+        level: level.id,
+        language: "python",
+        code: code,
+      });
+
+      setSubmissionResult(result);
+    } catch {
+      setError("Failed to submit solution");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
   if (loading) return <p>Loading level...</p>;
-  if (error) return <p>{error}</p>;
+  if (error && !level) return <p>{error}</p>;
   if (!level) return <p>Level not found.</p>;
 
   return (
@@ -66,10 +92,25 @@ export default function LevelDetailPage() {
 
       <div style={{ marginTop: "1rem" }}>
         <button type="button">Run</button>
-        <button type="button" style={{ marginLeft: "0.5rem" }}>
-          Submit
+        <button
+          type="button"
+          onClick={handleSubmit}
+          disabled={submitting}
+          style={{ marginLeft: "0.5rem" }}
+        >
+          {submitting ? "Submitting..." : "Submit"}
         </button>
       </div>
+
+      {error && <p style={{ marginTop: "1rem", color: "red" }}>{error}</p>}
+
+      {submissionResult && (
+        <div style={{ marginTop: "1rem", padding: "1rem", border: "1px solid #ccc" }}>
+          <h3>Submission Result</h3>
+          <p><strong>Submission ID:</strong> {submissionResult.id}</p>
+          <p><strong>Verdict:</strong> {submissionResult.verdict}</p>
+        </div>
+      )}
     </main>
   );
 }
