@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import Editor from "@monaco-editor/react";
 import { fetchLevel, type Level } from "../api/levels";
 
 export default function LevelDetailPage() {
   const { slug } = useParams<{ slug: string }>();
   const [level, setLevel] = useState<Level | null>(null);
+  const [code, setCode] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -19,6 +21,7 @@ export default function LevelDetailPage() {
       try {
         const data = await fetchLevel(slug);
         setLevel(data);
+        setCode(data.starter_code_python || "");
       } catch {
         setError("Could not load level");
       } finally {
@@ -34,7 +37,7 @@ export default function LevelDetailPage() {
   if (!level) return <p>Level not found.</p>;
 
   return (
-    <main>
+    <main style={{ padding: "2rem" }}>
       <Link to="/">← Back to levels</Link>
 
       <h1>{level.title}</h1>
@@ -44,8 +47,29 @@ export default function LevelDetailPage() {
       <h2>Description</h2>
       <p>{level.description}</p>
 
-      <h2>Starter Code</h2>
-      <pre>{level.starter_code_python}</pre>
+      <h2>Code Editor</h2>
+      <div style={{ border: "1px solid #ccc", borderRadius: "8px", overflow: "hidden" }}>
+        <Editor
+          height="400px"
+          defaultLanguage="python"
+          value={code}
+          onChange={(value) => setCode(value || "")}
+          theme="vs-dark"
+          options={{
+            minimap: { enabled: false },
+            fontSize: 14,
+            scrollBeyondLastLine: false,
+            automaticLayout: true,
+          }}
+        />
+      </div>
+
+      <div style={{ marginTop: "1rem" }}>
+        <button type="button">Run</button>
+        <button type="button" style={{ marginLeft: "0.5rem" }}>
+          Submit
+        </button>
+      </div>
     </main>
   );
 }
