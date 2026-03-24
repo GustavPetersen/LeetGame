@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { fetchLevels, type Level } from "../api/levels";
 
 export default function LevelsPage() {
@@ -41,7 +42,8 @@ export default function LevelsPage() {
               <p><strong>Difficulty:</strong> {level.difficulty}</p>
               <p>{level.description}</p>
               <p><strong>Function:</strong> {level.function_name}</p>
-              <button>Open level</button>
+
+              <Link to={`/levels/${level.slug}`}>Open level</Link>
             </div>
           ))}
         </div>

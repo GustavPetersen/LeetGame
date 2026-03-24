@@ -20,3 +20,13 @@ export async function fetchLevels(): Promise<Level[]> {
 
   return response.json();
 }
+
+export async function fetchLevel(slug: string): Promise<Level> {
+  const response = await fetch(`${API_BASE_URL}/levels/${slug}/`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch level");
+  }
+
+  return response.json();
+}
