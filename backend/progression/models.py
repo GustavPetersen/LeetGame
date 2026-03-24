@@ -21,3 +21,22 @@ class PlayerProgress(models.Model):
 
     def __str__(self):
         return f"{self.user} progress"
+    
+class LevelCompletion(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="level_completions",
+    )
+    level = models.ForeignKey(
+        "levels.Level",
+        on_delete=models.CASCADE,
+        related_name="completions",
+    )
+    completed_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "level")
+
+    def __str__(self):
+        return f"{self.user.username} completed {self.level.title}"

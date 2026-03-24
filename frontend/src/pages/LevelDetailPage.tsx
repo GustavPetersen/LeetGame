@@ -106,11 +106,19 @@ export default function LevelDetailPage() {
 
       {submissionResult && (
         <div style={{ marginTop: "1rem", padding: "1rem", border: "1px solid #ccc" }}>
-          <h3>Submission Result</h3>
-          <p><strong>Submission ID:</strong> {submissionResult.id}</p>
-          <p><strong>Verdict:</strong> {submissionResult.verdict}</p>
+            <h3>Submission Result</h3>
+            <p><strong>Submission ID:</strong> {submissionResult.id}</p>
+            <p><strong>Verdict:</strong> {submissionResult.verdict}</p>
+
+            {submissionResult.verdict === "accepted" && (
+            <p>Level completed.</p>
+            )}
+
+            {submissionResult.unlocked_next_level && (
+            <p>Unlocked next level: {submissionResult.unlocked_next_level}</p>
+            )}
         </div>
-      )}
+        )}
     </main>
   );
 }

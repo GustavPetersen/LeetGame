@@ -14,6 +14,7 @@ export type Submission = {
   language: string;
   code: string;
   verdict: string;
+  unlocked_next_level?: string | null;
 };
 
 export async function createSubmission(
