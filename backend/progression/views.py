@@ -16,6 +16,6 @@ class PlayerProgressDetailView(generics.RetrieveAPIView):
 class LevelCompletionListView(generics.ListAPIView):
     serializer_class = LevelCompletionSerializer
 
-    def get_queryset(self):
+    def get_queryset(self): # type: ignore
         user_id = self.kwargs["user_id"]
         return LevelCompletion.objects.filter(user_id=user_id).order_by("level__order")

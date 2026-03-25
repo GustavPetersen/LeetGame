@@ -15,7 +15,15 @@ export type Submission = {
   code: string;
   verdict: string;
   unlocked_next_level?: string | null;
+  judge_result?: {
+    verdict: string;
+    failed_test_case?: number;
+    expected?: unknown;
+    got?: unknown;
+    error?: string;
+  };
 };
+
 
 export async function createSubmission(
   payload: CreateSubmissionPayload

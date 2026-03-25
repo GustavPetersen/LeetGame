@@ -106,19 +106,42 @@ export default function LevelDetailPage() {
 
       {submissionResult && (
         <div style={{ marginTop: "1rem", padding: "1rem", border: "1px solid #ccc" }}>
-            <h3>Submission Result</h3>
-            <p><strong>Submission ID:</strong> {submissionResult.id}</p>
-            <p><strong>Verdict:</strong> {submissionResult.verdict}</p>
+          <h3>Submission Result</h3>
+          <p><strong>Verdict:</strong> {submissionResult.verdict}</p>
 
-            {submissionResult.verdict === "accepted" && (
-            <p>Level completed.</p>
-            )}
+          {submissionResult.verdict === "accepted" && (
+            <p>All test cases passed.</p>
+          )}
 
-            {submissionResult.unlocked_next_level && (
+          {submissionResult.judge_result?.failed_test_case && (
+            <p>
+              <strong>Failed test case:</strong> {submissionResult.judge_result.failed_test_case}
+            </p>
+          )}
+
+          {submissionResult.judge_result?.expected !== undefined && (
+            <p>
+              <strong>Expected:</strong> {JSON.stringify(submissionResult.judge_result.expected)}
+            </p>
+          )}
+
+          {submissionResult.judge_result?.got !== undefined && (
+            <p>
+              <strong>Got:</strong> {JSON.stringify(submissionResult.judge_result.got)}
+            </p>
+          )}
+
+          {submissionResult.judge_result?.error && (
+            <pre style={{ whiteSpace: "pre-wrap", color: "red" }}>
+              {submissionResult.judge_result.error}
+            </pre>
+          )}
+
+          {submissionResult.unlocked_next_level && (
             <p>Unlocked next level: {submissionResult.unlocked_next_level}</p>
-            )}
+          )}
         </div>
-        )}
+      )}
     </main>
   );
 }

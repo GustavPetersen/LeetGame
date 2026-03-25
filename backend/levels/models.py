@@ -24,3 +24,20 @@ class Level(models.Model):
 
     def __str__(self):
         return f"{self.order}. {self.title}"
+    
+class LevelTestCase(models.Model):
+    level = models.ForeignKey(
+        Level,
+        on_delete=models.CASCADE,
+        related_name="test_cases",
+    )
+    input_data = models.JSONField()
+    expected_output = models.JSONField()
+    is_hidden = models.BooleanField(default=False)
+    order = models.PositiveIntegerField(default=1)
+
+    class Meta:
+        ordering = ["order"]
+
+    def __str__(self):
+        return f"{self.level.title} - Test {self.order}"

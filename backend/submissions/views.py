@@ -3,12 +3,13 @@ from rest_framework.response import Response
 
 from .models import Submission
 from .serializers import SubmissionSerializer
+from .judge import judge_python_submission
 from levels.models import Level
 from progression.models import PlayerProgress, LevelCompletion
 
-# Create your views here.
+
 class SubmissionListView(generics.ListAPIView):
-    queryset = Submission.objects.all().order_by("-submitted_at")
+    queryset = Submission.objects.all().order_by("-id")
     serializer_class = SubmissionSerializer
 
 
@@ -25,25 +26,38 @@ class SubmissionCreateView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        code = serializer.validated_data.get("code", "")
         user = serializer.validated_data["user"]
         level = serializer.validated_data["level"]
+        language = serializer.validated_data["language"]
+        code = serializer.validated_data["code"]
 
-        fake_verdict = (
-            Submission.Verdict.ACCEPTED
-            if "return" in code and "pass" not in code
-            else Submission.Verdict.WRONG_ANSWER
+        if language != "python":
+            return Response(
+                {"detail": "Only Python is supported right now."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        test_cases = level.test_cases.all().order_by("order")
+        judge_result = judge_python_submission(
+            code=code,
+            function_name=level.function_name,
+            test_cases=test_cases,
         )
 
-        submission = serializer.save(verdict=fake_verdict)
+        verdict = judge_result["verdict"]
+
+        submission = Submission.objects.create(
+            user=user,
+            level=level,
+            language=language,
+            code=code,
+            verdict=verdict,
+        )
 
         unlocked_next_level = None
 
-        if submission.verdict == Submission.Verdict.ACCEPTED:
-            LevelCompletion.objects.get_or_create(
-                user=user,
-                level=level,
-            )
+        if verdict == "accepted":
+            LevelCompletion.objects.get_or_create(user=user, level=level)
 
             progress, _ = PlayerProgress.objects.get_or_create(user=user)
 
@@ -69,5 +83,6 @@ class SubmissionCreateView(generics.CreateAPIView):
 
         response_data = SubmissionSerializer(submission).data
         response_data["unlocked_next_level"] = unlocked_next_level
+        response_data["judge_result"] = judge_result
 
         return Response(response_data, status=status.HTTP_201_CREATED)
