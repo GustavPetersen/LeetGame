@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import Editor from "@monaco-editor/react";
 import Navbar from "../components/Navbar";
 import { fetchLevel, type Level } from "../api/levels";
@@ -28,7 +28,7 @@ export default function LevelDetailPage() {
   const [error, setError] = useState("");
   const [runResult, setRunResult] = useState<RunCodeResult | null>(null);
   const [submissionResult, setSubmissionResult] = useState<Submission | null>(null);
-
+  
   useEffect(() => {
     async function loadData() {
       if (!slug) {
@@ -46,6 +46,9 @@ export default function LevelDetailPage() {
         setLevel(levelData);
         setProgress(progressData);
         setCode(levelData.starter_code_python || "");
+        setRunResult(null);
+        setSubmissionResult(null);
+        setError("");
       } catch {
         setError("Could not load level");
       } finally {
@@ -100,6 +103,13 @@ export default function LevelDetailPage() {
       setError("Failed to submit solution");
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  const navigate = useNavigate();
+  function handleGoToNextLevel() {
+    if (submissionResult?.unlocked_next_level) {
+      navigate(`/levels/${submissionResult.unlocked_next_level}`);
     }
   }
 
@@ -325,9 +335,26 @@ export default function LevelDetailPage() {
                 <p>
                   <strong>Verdict:</strong> {submissionResult.verdict}
                 </p>
+
+                {submissionResult.verdict === "accepted" && (
+                  <p>Level completed successfully.</p>
+                )}
+
                 {submissionResult.unlocked_next_level && (
                   <p>Unlocked next level: {submissionResult.unlocked_next_level}</p>
                 )}
+
+                {submissionResult.verdict === "accepted" &&
+                  submissionResult.unlocked_next_level && (
+                  <div style={{ marginTop: "1rem", display: "flex", gap: "0.75rem" }}>
+                      <Button onClick={handleGoToNextLevel} variant="success">
+                        Go to next level
+                      </Button>
+                      <Link to="/" style={{ textDecoration: "none" }}>
+                        <Button variant="secondary">Back to levels</Button>
+                      </Link>
+                    </div>
+                  )}
 
                 {submissionResult.judge_result?.failed_test_case && (
                   <p>
