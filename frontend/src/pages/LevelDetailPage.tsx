@@ -157,39 +157,43 @@ export default function LevelDetailPage() {
 
             <h2>Sample Test Cases</h2>
             {level.sample_test_cases && level.sample_test_cases.length > 0 ? (
-              <Card key={testCase.id}>
-                <p style={{ marginTop: 0 }}>
-                  <strong>Test {testCase.order}</strong>
-                </p>
+              <div>
+                {level.sample_test_cases.map((testCase) => (
+                  <Card key={testCase.id}>
+                    <p style={{ marginTop: 0 }}>
+                      <strong>Test {testCase.order}</strong>
+                    </p>
 
-                <p>
-                  <strong>Input:</strong>
-                </p>
-                <pre
-                  style={{
-                    background: "#eee",
-                    padding: "0.75rem",
-                    borderRadius: "8px",
-                    overflowX: "auto",
-                  }}
-                >
-                  {JSON.stringify(testCase.input_data, null, 2)}
-                </pre>
+                    <p>
+                      <strong>Input:</strong>
+                    </p>
+                    <pre
+                      style={{
+                        background: "#eee",
+                        padding: "0.75rem",
+                        borderRadius: "8px",
+                        overflowX: "auto",
+                      }}
+                    >
+                      {JSON.stringify(testCase.input_data, null, 2)}
+                    </pre>
 
-                <p>
-                  <strong>Expected Output:</strong>
-                </p>
-                <pre
-                  style={{
-                    background: "#eee",
-                    padding: "0.75rem",
-                    borderRadius: "8px",
-                    overflowX: "auto",
-                  }}
-                >
-                  {JSON.stringify(testCase.expected_output, null, 2)}
-                </pre>
-              </Card>
+                    <p>
+                      <strong>Expected Output:</strong>
+                    </p>
+                    <pre
+                      style={{
+                        background: "#eee",
+                        padding: "0.75rem",
+                        borderRadius: "8px",
+                        overflowX: "auto",
+                      }}
+                    >
+                      {JSON.stringify(testCase.expected_output, null, 2)}
+                    </pre>
+                  </Card>
+                ))}
+              </div>
             ) : (
               <p>No sample test cases available.</p>
             )}
