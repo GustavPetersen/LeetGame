@@ -6,6 +6,7 @@ import { fetchLevel, type Level } from "../api/levels";
 import { fetchMyProgress, type PlayerProgress } from "../api/progression";
 import {
   createSubmission,
+  fetchSubmissionsByLevel,
   runCode,
   type Submission,
   type RunCodeResult,
@@ -25,6 +26,7 @@ export default function LevelDetailPage() {
   const [loading, setLoading] = useState(true);
   const [running, setRunning] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [submissionHistory, setSubmissionHistory] = useState<Submission[]>([]);
   const [error, setError] = useState("");
   const [runResult, setRunResult] = useState<RunCodeResult | null>(null);
   const [submissionResult, setSubmissionResult] = useState<Submission | null>(null);
@@ -38,9 +40,10 @@ export default function LevelDetailPage() {
       }
 
       try {
-        const [levelData, progressData] = await Promise.all([
-          fetchLevel(slug),
+        const levelData = await fetchLevel(slug);
+        const [progressData, submissionHistoryData] = await Promise.all([
           fetchMyProgress(),
+          fetchSubmissionsByLevel(levelData.id),
         ]);
 
         setLevel(levelData);
@@ -99,6 +102,9 @@ export default function LevelDetailPage() {
 
       const updatedProgress = await fetchMyProgress();
       setProgress(updatedProgress);
+      
+      const updatedHistory = await fetchSubmissionsByLevel(level.id);
+      setSubmissionHistory(updatedHistory);
     } catch {
       setError("Failed to submit solution");
     } finally {
@@ -414,6 +420,54 @@ export default function LevelDetailPage() {
                   </pre>
                 )}
               </StatusPanel>
+            )}
+            {submissionHistory.length > 0 && (
+              <div style={{ marginTop: "1rem" }}>
+                <h3>Recent Submissions</h3>
+
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                  {submissionHistory.slice(0, 5).map((submission) => (
+                    <Card key={submission.id}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          gap: "1rem",
+                          flexWrap: "wrap",
+                          alignItems: "center",
+                        }}
+                      >
+                        <span>
+                          <strong>#{submission.id}</strong>
+                        </span>
+
+                        <Badge
+                          variant={
+                            submission.verdict === "accepted"
+                              ? "success"
+                              : submission.verdict === "wrong_answer"
+                              ? "info"
+                              : "neutral"
+                          }
+                        >
+                          {submission.verdict}
+                        </Badge>
+
+                        <span>
+                          <strong>Language:</strong> {submission.language}
+                        </span>
+
+                        {submission.submitted_at && (
+                          <span>
+                            <strong>Submitted:</strong>{" "}
+                            {new Date(submission.submitted_at).toLocaleString()}
+                          </span>
+                        )}
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </div>
             )}
           </section>
         </div>

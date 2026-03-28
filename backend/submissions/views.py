@@ -15,7 +15,13 @@ class SubmissionListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Submission.objects.filter(user=self.request.user).order_by("-id")
+        queryset = Submission.objects.filter(user=self.request.user).order_by("-id")
+        level_id = self.request.query_params.get("level")
+
+        if level_id:
+            queryset = queryset.filter(level_id=level_id)
+
+        return queryset
 
 
 class SubmissionDetailView(generics.RetrieveAPIView):
@@ -86,7 +92,8 @@ class SubmissionCreateView(generics.CreateAPIView):
         response_data["judge_result"] = judge_result
 
         return Response(response_data, status=status.HTTP_201_CREATED)
-    
+
+
 class RunCodeView(generics.GenericAPIView):
     serializer_class = RunCodeSerializer
     permission_classes = [IsAuthenticated]

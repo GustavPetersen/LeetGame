@@ -15,6 +15,7 @@ export type Submission = {
   language: string;
   code: string;
   verdict: string;
+  submitted_at?: string;
   unlocked_next_level?: string | null;
   judge_result?: {
     verdict: string;
@@ -64,6 +65,16 @@ export async function runCode(payload: RunCodePayload): Promise<RunCodeResult> {
 
   if (!response.ok) {
     throw new Error("Failed to run code");
+  }
+
+  return response.json();
+}
+
+export async function fetchSubmissionsByLevel(levelId: number): Promise<Submission[]> {
+  const response = await authenticatedFetch(`${API_BASE_URL}/submissions/?level=${levelId}`);
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch submissions");
   }
 
   return response.json();
