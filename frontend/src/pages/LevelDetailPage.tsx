@@ -217,7 +217,13 @@ export default function LevelDetailPage() {
                         overflowX: "auto",
                       }}
                     >
-                      {JSON.stringify(testCase.input_data, null, 2)}
+                    {JSON.stringify(
+                      Array.isArray(testCase.input_data) && testCase.input_data.length === 1
+                        ? testCase.input_data[0]
+                        : testCase.input_data,
+                      null,
+                      2
+                    )}
                     </pre>
 
                     <p>
