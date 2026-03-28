@@ -12,7 +12,7 @@ class Level(models.Model):
         BOSS = "boss", "Boss"
 
     title = models.CharField(max_length=255)
-    slug = models.SlugField(unique=True)
+    slug = models.SlugField(unique=True, max_length=120)
     description = models.TextField()
     difficulty = models.CharField(max_length=10, choices=Difficulty.choices)
     order = models.PositiveIntegerField(unique=True)
