@@ -46,7 +46,13 @@ export default function LevelsPage() {
     <>
       <Navbar progress={progress} />
 
-      <main style={{ padding: "0 2rem 2rem" }}>
+      <main
+        style={{
+          padding: "0 2rem 3rem",
+          maxWidth: "1400px",
+          margin: "0 auto",
+        }}
+      >
         <section>
           <h2>Progression Map</h2>
 
