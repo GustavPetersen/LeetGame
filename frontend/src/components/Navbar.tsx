@@ -32,7 +32,12 @@ export default function Navbar({ progress }: NavbarProps) {
           LeetGame
         </Link>
 
-        {loggedIn && <Link to="/">Levels</Link>}
+        {loggedIn && (
+          <>
+            <Link to="/">Levels</Link>
+            <Link to="/profile">Profile</Link>
+          </>
+        )}
       </div>
 
       <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>

@@ -3,6 +3,7 @@ import LevelsPage from "./pages/LevelsPage";
 import LevelDetailPage from "./pages/LevelDetailPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import ProfilePage from "./pages/ProfilePage";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
@@ -22,6 +23,14 @@ function App() {
           element={
             <ProtectedRoute>
               <LevelDetailPage />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <ProfilePage />
             </ProtectedRoute>
           }
         />
