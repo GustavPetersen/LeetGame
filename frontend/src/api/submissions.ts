@@ -1,7 +1,8 @@
+import { authenticatedFetch } from "../lib/api";
+
 const API_BASE_URL = "http://127.0.0.1:8000/api";
 
 export type CreateSubmissionPayload = {
-  user: number;
   level: number;
   language: string;
   code: string;
@@ -24,25 +25,6 @@ export type Submission = {
   };
 };
 
-
-export async function createSubmission(
-  payload: CreateSubmissionPayload
-): Promise<Submission> {
-  const response = await fetch(`${API_BASE_URL}/submissions/create/`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-
-  if (!response.ok) {
-    throw new Error("Failed to create submission");
-  }
-
-  return response.json();
-}
-
 export type RunCodePayload = {
   level: number;
   language: string;
@@ -61,12 +43,22 @@ export type RunCodeResult = {
   total_sample_tests: number;
 };
 
-export async function runCode(payload: RunCodePayload): Promise<RunCodeResult> {
-  const response = await fetch(`${API_BASE_URL}/submissions/run/`, {
+export async function createSubmission(payload: CreateSubmissionPayload): Promise<Submission> {
+  const response = await authenticatedFetch(`${API_BASE_URL}/submissions/create/`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to create submission");
+  }
+
+  return response.json();
+}
+
+export async function runCode(payload: RunCodePayload): Promise<RunCodeResult> {
+  const response = await authenticatedFetch(`${API_BASE_URL}/submissions/run/`, {
+    method: "POST",
     body: JSON.stringify(payload),
   });
 

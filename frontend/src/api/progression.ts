@@ -1,3 +1,5 @@
+import { authenticatedFetch } from "../lib/api";
+
 const API_BASE_URL = "http://127.0.0.1:8000/api";
 
 export type PlayerProgress = {
@@ -19,8 +21,8 @@ export type LevelCompletion = {
   completed_at: string;
 };
 
-export async function fetchPlayerProgress(userId: number): Promise<PlayerProgress> {
-  const response = await fetch(`${API_BASE_URL}/progression/${userId}/`);
+export async function fetchMyProgress(): Promise<PlayerProgress> {
+  const response = await authenticatedFetch(`${API_BASE_URL}/progression/me/`);
 
   if (!response.ok) {
     throw new Error("Failed to fetch player progress");
@@ -29,8 +31,8 @@ export async function fetchPlayerProgress(userId: number): Promise<PlayerProgres
   return response.json();
 }
 
-export async function fetchLevelCompletions(userId: number): Promise<LevelCompletion[]> {
-  const response = await fetch(`${API_BASE_URL}/progression/${userId}/completions/`);
+export async function fetchMyCompletions(): Promise<LevelCompletion[]> {
+  const response = await authenticatedFetch(`${API_BASE_URL}/progression/me/completions/`);
 
   if (!response.ok) {
     throw new Error("Failed to fetch level completions");

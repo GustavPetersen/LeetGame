@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchLevels, type Level } from "../api/levels";
 import {
-  fetchLevelCompletions,
-  fetchPlayerProgress,
+  fetchMyProgress,
+  fetchMyCompletions,
   type LevelCompletion,
   type PlayerProgress,
 } from "../api/progression";
@@ -22,8 +22,8 @@ export default function LevelsPage() {
       try {
         const [levelsData, progressData, completionsData] = await Promise.all([
           fetchLevels(),
-          fetchPlayerProgress(userId),
-          fetchLevelCompletions(userId),
+          fetchMyProgress(),
+          fetchMyCompletions(),
         ]);
 
         setLevels(levelsData);

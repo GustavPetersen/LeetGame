@@ -12,4 +12,4 @@ class SubmissionSerializer(serializers.ModelSerializer):
             "code",
             "verdict",
         ]
-        read_only_fields = ["id", "verdict"]
+        read_only_fields = ["id", "user", "verdict"]

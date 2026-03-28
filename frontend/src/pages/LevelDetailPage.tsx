@@ -70,7 +70,6 @@ export default function LevelDetailPage() {
 
     try {
       const result = await createSubmission({
-        user: 1,
         level: level.id,
         language: "python",
         code: code,

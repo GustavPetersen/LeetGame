@@ -1,21 +1,21 @@
 from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
 from .models import PlayerProgress, LevelCompletion
 from .serializers import PlayerProgressSerializer, LevelCompletionSerializer
 
-# Create your views here.
-class PlayerProgressListView(generics.ListAPIView):
-    queryset = PlayerProgress.objects.all()
+
+class MyPlayerProgressView(generics.RetrieveAPIView):
     serializer_class = PlayerProgressSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        progress, _ = PlayerProgress.objects.get_or_create(user=self.request.user)
+        return progress
 
 
-class PlayerProgressDetailView(generics.RetrieveAPIView):
-    queryset = PlayerProgress.objects.all()
-    serializer_class = PlayerProgressSerializer
-    lookup_field = "user_id"
-
-class LevelCompletionListView(generics.ListAPIView):
+class MyLevelCompletionListView(generics.ListAPIView):
     serializer_class = LevelCompletionSerializer
+    permission_classes = [IsAuthenticated]
 
-    def get_queryset(self): # type: ignore
-        user_id = self.kwargs["user_id"]
-        return LevelCompletion.objects.filter(user_id=user_id).order_by("level__order")
+    def get_queryset(self):
+        return LevelCompletion.objects.filter(user=self.request.user).order_by("level__order")

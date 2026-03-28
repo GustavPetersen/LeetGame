@@ -1,4 +1,5 @@
 from rest_framework import generics, status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from .models import Submission
@@ -10,24 +11,31 @@ from progression.models import PlayerProgress, LevelCompletion
 
 
 class SubmissionListView(generics.ListAPIView):
-    queryset = Submission.objects.all().order_by("-id")
     serializer_class = SubmissionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Submission.objects.filter(user=self.request.user).order_by("-id")
 
 
 class SubmissionDetailView(generics.RetrieveAPIView):
-    queryset = Submission.objects.all()
     serializer_class = SubmissionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Submission.objects.filter(user=self.request.user)
 
 
 class SubmissionCreateView(generics.CreateAPIView):
     queryset = Submission.objects.all()
     serializer_class = SubmissionSerializer
+    permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        user = serializer.validated_data["user"]
+        user = request.user
         level = serializer.validated_data["level"]
         language = serializer.validated_data["language"]
         code = serializer.validated_data["code"]
@@ -46,14 +54,7 @@ class SubmissionCreateView(generics.CreateAPIView):
         )
 
         verdict = judge_result["verdict"]
-
-        submission = Submission.objects.create(
-            user=user,
-            level=level,
-            language=language,
-            code=code,
-            verdict=verdict,
-        )
+        submission = serializer.save(user=user, verdict=verdict)
 
         unlocked_next_level = None
 
@@ -61,11 +62,9 @@ class SubmissionCreateView(generics.CreateAPIView):
             LevelCompletion.objects.get_or_create(user=user, level=level)
 
             progress, _ = PlayerProgress.objects.get_or_create(user=user)
-
             progress.completed_levels_count = LevelCompletion.objects.filter(user=user).count()
 
             next_level = Level.objects.filter(order=level.order + 1).first()
-
             if next_level:
                 if (
                     progress.highest_unlocked_level is None
@@ -90,6 +89,7 @@ class SubmissionCreateView(generics.CreateAPIView):
     
 class RunCodeView(generics.GenericAPIView):
     serializer_class = RunCodeSerializer
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -108,25 +108,20 @@ class RunCodeView(generics.GenericAPIView):
         try:
             level = Level.objects.get(id=level_id)
         except Level.DoesNotExist:
-            return Response(
-                {"detail": "Level not found."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+            return Response({"detail": "Level not found."}, status=status.HTTP_404_NOT_FOUND)
 
         sample_test_cases = level.test_cases.filter(is_hidden=False).order_by("order")
-
         judge_result = judge_python_submission(
             code=code,
             function_name=level.function_name,
             test_cases=sample_test_cases,
         )
 
-        total_sample_tests = sample_test_cases.count()
-
-        response_data = {
-            "verdict": judge_result["verdict"],
-            "judge_result": judge_result,
-            "total_sample_tests": total_sample_tests,
-        }
-
-        return Response(response_data, status=status.HTTP_200_OK)
+        return Response(
+            {
+                "verdict": judge_result["verdict"],
+                "judge_result": judge_result,
+                "total_sample_tests": sample_test_cases.count(),
+            },
+            status=status.HTTP_200_OK,
+        )
