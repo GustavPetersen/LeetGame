@@ -7,7 +7,10 @@ class LevelTestCaseSerializer(serializers.ModelSerializer):
         model = LevelTestCase
         fields = ["id", "input_data", "expected_output", "order"]
 
+
 class LevelSerializer(serializers.ModelSerializer):
+    sample_test_cases = serializers.SerializerMethodField()
+
     class Meta:
         model = Level
         fields = [
@@ -17,12 +20,13 @@ class LevelSerializer(serializers.ModelSerializer):
             "description",
             "difficulty",
             "order",
+            "chapter",
+            "chapter_order",
+            "node_type",
             "starter_code_python",
             "function_name",
             "sample_test_cases",
         ]
-    
-    sample_test_cases = serializers.SerializerMethodField()
 
     def get_sample_test_cases(self, obj):
         visible_tests = obj.test_cases.filter(is_hidden=False).order_by("order")

@@ -1,5 +1,13 @@
 import traceback
 
+def normalize_result(function_name, result):
+    if function_name in {"intersection", "top_k_frequent"} and isinstance(result, list):
+        return sorted(result)
+
+    if function_name == "group_anagrams" and isinstance(result, list):
+        return sorted([sorted(group) for group in result])
+
+    return result
 
 def judge_python_submission(code: str, function_name: str, test_cases):
     namespace = {}
@@ -40,6 +48,7 @@ def judge_python_submission(code: str, function_name: str, test_cases):
                 }
 
             result = submitted_function(*args)
+            result = normalize_result(function_name, result)
 
             if result != expected:
                 return {

@@ -1,3 +1,10 @@
+export type SampleTestCase = {
+  id: number;
+  input_data: unknown;
+  expected_output: unknown;
+  order: number;
+};
+
 export type Level = {
   id: number;
   title: string;
@@ -5,15 +12,12 @@ export type Level = {
   description: string;
   difficulty: string;
   order: number;
+  chapter: string;
+  chapter_order: number;
+  node_type: string;
   starter_code_python: string;
   function_name: string;
-};
-
-export type SampleTestCase = {
-  id: number;
-  input_data: unknown;
-  expected_output: unknown;
-  order: number;
+  sample_test_cases?: SampleTestCase[];
 };
 
 const API_BASE_URL = "http://127.0.0.1:8000/api";
