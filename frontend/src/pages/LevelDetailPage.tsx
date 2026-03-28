@@ -11,6 +11,11 @@ import {
   type RunCodeResult,
 } from "../api/submissions";
 
+import Card from "../components/ui/Card";
+import Button from "../components/ui/Button";
+import StatusPanel from "../components/ui/StatusPanel";
+import Badge from "../components/ui/Badge";
+
 export default function LevelDetailPage() {
   const { slug } = useParams<{ slug: string }>();
 
@@ -129,13 +134,22 @@ export default function LevelDetailPage() {
           >
             <h1 style={{ marginTop: 0 }}>{level.title}</h1>
 
-            <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
-              <span>
-                <strong>Difficulty:</strong> {level.difficulty}
-              </span>
-              <span>
-                <strong>Function:</strong> {level.function_name}
-              </span>
+            <div style={{ display: "flex", gap: "0.75rem", marginBottom: "1rem" }}>
+              <Badge
+                variant={
+                  level.difficulty.toLowerCase() === "easy"
+                    ? "easy"
+                    : level.difficulty.toLowerCase() === "medium"
+                    ? "medium"
+                    : level.difficulty.toLowerCase() === "hard"
+                    ? "hard"
+                    : "neutral"
+                }
+              >
+                {level.difficulty}
+              </Badge>
+              
+              <Badge variant="neutral">{level.function_name}</Badge>
             </div>
 
             <h2>Description</h2>
@@ -143,51 +157,39 @@ export default function LevelDetailPage() {
 
             <h2>Sample Test Cases</h2>
             {level.sample_test_cases && level.sample_test_cases.length > 0 ? (
-              <div>
-                {level.sample_test_cases.map((testCase) => (
-                  <div
-                    key={testCase.id}
-                    style={{
-                      border: "1px solid #ddd",
-                      borderRadius: "10px",
-                      padding: "1rem",
-                      marginBottom: "1rem",
-                      background: "#f8f8f8",
-                    }}
-                  >
-                    <p style={{ marginTop: 0 }}>
-                      <strong>Test {testCase.order}</strong>
-                    </p>
-                    <p>
-                      <strong>Input:</strong>
-                    </p>
-                    <pre
-                      style={{
-                        background: "#eee",
-                        padding: "0.75rem",
-                        borderRadius: "8px",
-                        overflowX: "auto",
-                      }}
-                    >
-                      {JSON.stringify(testCase.input_data, null, 2)}
-                    </pre>
+              <Card key={testCase.id}>
+                <p style={{ marginTop: 0 }}>
+                  <strong>Test {testCase.order}</strong>
+                </p>
 
-                    <p>
-                      <strong>Expected Output:</strong>
-                    </p>
-                    <pre
-                      style={{
-                        background: "#eee",
-                        padding: "0.75rem",
-                        borderRadius: "8px",
-                        overflowX: "auto",
-                      }}
-                    >
-                      {JSON.stringify(testCase.expected_output, null, 2)}
-                    </pre>
-                  </div>
-                ))}
-              </div>
+                <p>
+                  <strong>Input:</strong>
+                </p>
+                <pre
+                  style={{
+                    background: "#eee",
+                    padding: "0.75rem",
+                    borderRadius: "8px",
+                    overflowX: "auto",
+                  }}
+                >
+                  {JSON.stringify(testCase.input_data, null, 2)}
+                </pre>
+
+                <p>
+                  <strong>Expected Output:</strong>
+                </p>
+                <pre
+                  style={{
+                    background: "#eee",
+                    padding: "0.75rem",
+                    borderRadius: "8px",
+                    overflowX: "auto",
+                  }}
+                >
+                  {JSON.stringify(testCase.expected_output, null, 2)}
+                </pre>
+              </Card>
             ) : (
               <p>No sample test cases available.</p>
             )}
@@ -226,39 +228,19 @@ export default function LevelDetailPage() {
             </div>
 
             <div style={{ marginTop: "1rem", display: "flex", gap: "0.75rem" }}>
-              <button type="button" onClick={handleRun} disabled={running}>
+              <Button onClick={handleRun} disabled={running} variant="secondary">
                 {running ? "Running..." : "Run"}
-              </button>
+              </Button>
 
-              <button type="button" onClick={handleSubmit} disabled={submitting}>
+              <Button onClick={handleSubmit} disabled={submitting} variant="primary">
                 {submitting ? "Submitting..." : "Submit"}
-              </button>
+              </Button>
             </div>
 
-            {error && (
-              <div
-                style={{
-                  marginTop: "1rem",
-                  padding: "1rem",
-                  border: "1px solid #f5c2c7",
-                  borderRadius: "10px",
-                  background: "#f8d7da",
-                  color: "#842029",
-                }}
-              >
-                {error}
-              </div>
-            )}
+            {error && <StatusPanel variant="error">{error}</StatusPanel>}
 
             {runResult && (
-              <div
-                style={{
-                  marginTop: "1rem",
-                  padding: "1rem",
-                  border: "1px solid #ccc",
-                  borderRadius: "10px",
-                }}
-              >
+              <StatusPanel variant={runResult.verdict === "accepted" ? "success" : "info"}>
                 <h3 style={{ marginTop: 0 }}>Run Result</h3>
                 <p>
                   <strong>Verdict:</strong> {runResult.verdict}
@@ -328,23 +310,17 @@ export default function LevelDetailPage() {
                     {runResult.judge_result.error}
                   </pre>
                 )}
-              </div>
+                </StatusPanel>
             )}
 
             {submissionResult && (
-              <div
-                style={{
-                  marginTop: "1rem",
-                  padding: "1rem",
-                  border: "1px solid #ccc",
-                  borderRadius: "10px",
-                }}
+              <StatusPanel
+                variant={submissionResult.verdict === "accepted" ? "success" : "info"}
               >
                 <h3 style={{ marginTop: 0 }}>Submission Result</h3>
                 <p>
                   <strong>Verdict:</strong> {submissionResult.verdict}
                 </p>
-
                 {submissionResult.unlocked_next_level && (
                   <p>Unlocked next level: {submissionResult.unlocked_next_level}</p>
                 )}
@@ -406,7 +382,7 @@ export default function LevelDetailPage() {
                     {submissionResult.judge_result.error}
                   </pre>
                 )}
-              </div>
+              </StatusPanel>
             )}
           </section>
         </div>

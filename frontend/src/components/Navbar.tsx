@@ -1,6 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { clearTokens, isLoggedIn } from "../lib/auth";
 import type { PlayerProgress } from "../api/progression";
+import Button from "./ui/Button";
 
 type NavbarProps = {
   progress?: PlayerProgress | null;
@@ -47,9 +48,9 @@ export default function Navbar({ progress }: NavbarProps) {
         )}
 
         {loggedIn ? (
-          <button type="button" onClick={handleLogout}>
+            <Button onClick={handleLogout} variant="secondary">
             Logout
-          </button>
+            </Button>
         ) : (
           <>
             <Link to="/login">Login</Link>

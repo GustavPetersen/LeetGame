@@ -9,6 +9,10 @@ import {
   type PlayerProgress,
 } from "../api/progression";
 
+import Card from "../components/ui/Card";
+import Badge from "../components/ui/Badge";
+import Button from "../components/ui/Button";
+
 function getDifficultyColor(difficulty: string) {
   switch (difficulty.toLowerCase()) {
     case "easy":
@@ -163,32 +167,8 @@ export default function LevelsPage() {
               {levels.map((level) => {
                 const isCompleted = completedLevelIds.has(level.id);
                 const isUnlocked = level.order <= highestUnlockedOrder;
-
-                let statusLabel = "Locked";
-                let statusColor = "#6c757d";
-
-                if (isCompleted) {
-                  statusLabel = "Completed";
-                  statusColor = "#198754";
-                } else if (isUnlocked) {
-                  statusLabel = "Unlocked";
-                  statusColor = "#0d6efd";
-                }
-
                 return (
-                  <article
-                    key={level.id}
-                    style={{
-                      border: "1px solid #ccc",
-                      borderRadius: "14px",
-                      padding: "1rem",
-                      background: "#fff",
-                      opacity: isUnlocked ? 1 : 0.7,
-                      boxShadow: isCompleted
-                        ? "0 0 0 2px rgba(25, 135, 84, 0.15)"
-                        : "none",
-                    }}
-                  >
+                  <Card key={level.id} highlight={isCompleted}>
                     <div
                       style={{
                         display: "flex",
@@ -205,34 +185,29 @@ export default function LevelsPage() {
                         <h3 style={{ margin: "0.25rem 0 0" }}>{level.title}</h3>
                       </div>
 
-                      <span
-                        style={{
-                          padding: "0.35rem 0.65rem",
-                          borderRadius: "999px",
-                          fontSize: "0.8rem",
-                          fontWeight: 600,
-                          color: "#fff",
-                          background: statusColor,
-                          whiteSpace: "nowrap",
-                        }}
+                      <Badge
+                        variant={
+                          isCompleted ? "success" : isUnlocked ? "info" : "neutral"
+                        }
                       >
-                        {statusLabel}
-                      </span>
+                        {isCompleted ? "Completed" : isUnlocked ? "Unlocked" : "Locked"}
+                      </Badge>
                     </div>
 
                     <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.75rem" }}>
-                      <span
-                        style={{
-                          padding: "0.3rem 0.6rem",
-                          borderRadius: "999px",
-                          fontSize: "0.8rem",
-                          fontWeight: 600,
-                          color: "#fff",
-                          background: getDifficultyColor(level.difficulty),
-                        }}
+                      <Badge
+                        variant={
+                          level.difficulty.toLowerCase() === "easy"
+                            ? "easy"
+                            : level.difficulty.toLowerCase() === "medium"
+                            ? "medium"
+                            : level.difficulty.toLowerCase() === "hard"
+                            ? "hard"
+                            : "neutral"
+                        }
                       >
                         {level.difficulty}
-                      </span>
+                      </Badge>
                     </div>
 
                     <p
@@ -247,36 +222,18 @@ export default function LevelsPage() {
 
                     <div style={{ marginTop: "1rem" }}>
                       {isUnlocked ? (
-                        <Link
-                          to={`/levels/${level.slug}`}
-                          style={{
-                            display: "inline-block",
-                            padding: "0.65rem 1rem",
-                            borderRadius: "10px",
-                            background: "#111827",
-                            color: "#fff",
-                            textDecoration: "none",
-                            fontWeight: 600,
-                          }}
-                        >
-                          {isCompleted ? "Replay level" : "Play level"}
+                        <Link to={`/levels/${level.slug}`} style={{ textDecoration: "none" }}>
+                          <Button variant="primary">
+                            {isCompleted ? "Replay level" : "Play level"}
+                          </Button>
                         </Link>
                       ) : (
-                        <span
-                          style={{
-                            display: "inline-block",
-                            padding: "0.65rem 1rem",
-                            borderRadius: "10px",
-                            background: "#e9ecef",
-                            color: "#6c757d",
-                            fontWeight: 600,
-                          }}
-                        >
+                        <Button variant="secondary" disabled>
                           Locked
-                        </span>
+                        </Button>
                       )}
                     </div>
-                  </article>
+                  </Card>
                 );
               })}
             </div>
