@@ -12,6 +12,12 @@ import {
   type RunCodeResult,
 } from "../api/submissions";
 
+import {
+  saveCodeDraft,
+  loadCodeDraft,
+  clearCodeDraft,
+} from "../lib/codeDrafts";
+
 import Card from "../components/ui/Card";
 import Button from "../components/ui/Button";
 import StatusPanel from "../components/ui/StatusPanel";
@@ -48,7 +54,11 @@ export default function LevelDetailPage() {
 
         setLevel(levelData);
         setProgress(progressData);
-        setCode(levelData.starter_code_python || "");
+        setSubmissionHistory(submissionHistoryData);
+
+        const savedDraft = loadCodeDraft(levelData.slug);
+        setCode(savedDraft ?? levelData.starter_code_python ?? "");
+
         setRunResult(null);
         setSubmissionResult(null);
         setError("");
@@ -61,6 +71,11 @@ export default function LevelDetailPage() {
 
     loadData();
   }, [slug]);
+
+  useEffect(() => {
+    if (!level) return;
+    saveCodeDraft(level.slug, code);
+  }, [level, code]);
 
   async function handleRun() {
     if (!level) return;
@@ -100,6 +115,10 @@ export default function LevelDetailPage() {
 
       setSubmissionResult(result);
 
+      if (result.verdict === "accepted") {
+        clearCodeDraft(level.slug);
+      }
+
       const updatedProgress = await fetchMyProgress();
       setProgress(updatedProgress);
       
@@ -110,6 +129,13 @@ export default function LevelDetailPage() {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function handleResetCode() {
+    if (!level) return;
+
+    setCode(level.starter_code_python || "");
+    clearCodeDraft(level.slug);
   }
 
   const navigate = useNavigate();
@@ -247,15 +273,19 @@ export default function LevelDetailPage() {
               />
             </div>
 
-            <div style={{ marginTop: "1rem", display: "flex", gap: "0.75rem" }}>
-              <Button onClick={handleRun} disabled={running} variant="secondary">
-                {running ? "Running..." : "Run"}
-              </Button>
+          <div style={{ marginTop: "1rem", display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+            <Button onClick={handleRun} disabled={running} variant="secondary">
+              {running ? "Running..." : "Run"}
+            </Button>
 
-              <Button onClick={handleSubmit} disabled={submitting} variant="primary">
-                {submitting ? "Submitting..." : "Submit"}
-              </Button>
-            </div>
+            <Button onClick={handleSubmit} disabled={submitting} variant="primary">
+              {submitting ? "Submitting..." : "Submit"}
+            </Button>
+
+            <Button onClick={handleResetCode} variant="secondary">
+              Reset Code
+            </Button>
+          </div>
 
             {error && <StatusPanel variant="error">{error}</StatusPanel>}
 
