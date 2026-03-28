@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import Navbar from "../components/Navbar";
 import { loginUser } from "../api/auth";
 import { setTokens } from "../lib/auth";
 
@@ -23,36 +24,40 @@ export default function LoginPage() {
   }
 
   return (
-    <main style={{ padding: "2rem" }}>
-      <h1>Login</h1>
+    <>
+      <Navbar />
 
-      <form onSubmit={handleSubmit}>
-        <div>
-          <label>Username</label>
-          <br />
-          <input value={username} onChange={(e) => setUsername(e.target.value)} />
-        </div>
+      <main style={{ padding: "0 2rem 2rem" }}>
+        <h1>Login</h1>
 
-        <div style={{ marginTop: "1rem" }}>
-          <label>Password</label>
-          <br />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
+        <form onSubmit={handleSubmit}>
+          <div>
+            <label>Username</label>
+            <br />
+            <input value={username} onChange={(e) => setUsername(e.target.value)} />
+          </div>
 
-        <button type="submit" style={{ marginTop: "1rem" }}>
-          Login
-        </button>
-      </form>
+          <div style={{ marginTop: "1rem" }}>
+            <label>Password</label>
+            <br />
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
+          <button type="submit" style={{ marginTop: "1rem" }}>
+            Login
+          </button>
+        </form>
 
-      <p style={{ marginTop: "1rem" }}>
-        No account? <Link to="/register">Register</Link>
-      </p>
-    </main>
+        {error && <p style={{ color: "red" }}>{error}</p>}
+
+        <p style={{ marginTop: "1rem" }}>
+          No account? <Link to="/register">Register</Link>
+        </p>
+      </main>
+    </>
   );
 }
