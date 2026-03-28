@@ -9,6 +9,13 @@ export type Level = {
   function_name: string;
 };
 
+export type SampleTestCase = {
+  id: number;
+  input_data: unknown;
+  expected_output: unknown;
+  order: number;
+};
+
 const API_BASE_URL = "http://127.0.0.1:8000/api";
 
 export async function fetchLevels(): Promise<Level[]> {

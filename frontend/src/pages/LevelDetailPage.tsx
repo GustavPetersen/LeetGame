@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Editor from "@monaco-editor/react";
 import { fetchLevel, type Level } from "../api/levels";
-import { createSubmission, type Submission } from "../api/submissions";
+import { createSubmission, runCode, type Submission, type RunCodeResult } from "../api/submissions";
 
 export default function LevelDetailPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -12,6 +12,9 @@ export default function LevelDetailPage() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [submissionResult, setSubmissionResult] = useState<Submission | null>(null);
+
+  const [running, setRunning] = useState(false);
+  const [runResult, setRunResult] = useState<RunCodeResult | null>(null);
 
   useEffect(() => {
     async function loadLevel() {
@@ -34,6 +37,29 @@ export default function LevelDetailPage() {
 
     loadLevel();
   }, [slug]);
+
+
+  async function handleRun() {
+    if (!level) return;
+
+    setRunning(true);
+    setError("");
+    setRunResult(null);
+
+    try {
+      const result = await runCode({
+        level: level.id,
+        language: "python",
+        code: code,
+      });
+
+      setRunResult(result);
+    } catch {
+      setError("Failed to run code");
+    } finally {
+      setRunning(false);
+    }
+  }
 
   async function handleSubmit() {
     if (!level) return;
@@ -73,6 +99,26 @@ export default function LevelDetailPage() {
       <h2>Description</h2>
       <p>{level.description}</p>
 
+
+      <h2>Sample Test Cases</h2>
+      {level.sample_test_cases && level.sample_test_cases.length > 0 ? (
+        <div>
+          {level.sample_test_cases.map((testCase) => (
+            <div
+              key={testCase.id}
+              style={{ border: "1px solid #ccc", padding: "1rem", marginBottom: "1rem" }}
+            >
+              <p><strong>Test {testCase.order}</strong></p>
+              <p><strong>Input:</strong> {JSON.stringify(testCase.input_data)}</p>
+              <p><strong>Expected Output:</strong> {JSON.stringify(testCase.expected_output)}</p>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <p>No sample test cases available.</p>
+      )}
+
+
       <h2>Code Editor</h2>
       <div style={{ border: "1px solid #ccc", borderRadius: "8px", overflow: "hidden" }}>
         <Editor
@@ -91,7 +137,9 @@ export default function LevelDetailPage() {
       </div>
 
       <div style={{ marginTop: "1rem" }}>
-        <button type="button">Run</button>
+        <button type="button" onClick={handleRun} disabled={running}>
+          {running ? "Running..." : "Run"}
+        </button>
         <button
           type="button"
           onClick={handleSubmit}
@@ -103,6 +151,42 @@ export default function LevelDetailPage() {
       </div>
 
       {error && <p style={{ marginTop: "1rem", color: "red" }}>{error}</p>}
+
+      {runResult && (
+        <div style={{ marginTop: "1rem", padding: "1rem", border: "1px solid #ccc" }}>
+          <h3>Run Result</h3>
+          <p><strong>Verdict:</strong> {runResult.verdict}</p>
+          <p><strong>Sample tests:</strong> {runResult.total_sample_tests}</p>
+
+          {runResult.verdict === "accepted" && (
+            <p>All visible sample tests passed.</p>
+          )}
+
+          {runResult.judge_result?.failed_test_case && (
+            <p>
+              <strong>Failed test case:</strong> {runResult.judge_result.failed_test_case}
+            </p>
+          )}
+
+          {runResult.judge_result?.expected !== undefined && (
+            <p>
+              <strong>Expected:</strong> {JSON.stringify(runResult.judge_result.expected)}
+            </p>
+          )}
+
+          {runResult.judge_result?.got !== undefined && (
+            <p>
+              <strong>Got:</strong> {JSON.stringify(runResult.judge_result.got)}
+            </p>
+          )}
+
+          {runResult.judge_result?.error && (
+            <pre style={{ whiteSpace: "pre-wrap", color: "red" }}>
+              {runResult.judge_result.error}
+            </pre>
+          )}
+        </div>
+      )}
 
       {submissionResult && (
         <div style={{ marginTop: "1rem", padding: "1rem", border: "1px solid #ccc" }}>

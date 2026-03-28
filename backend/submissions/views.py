@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from .models import Submission
 from .serializers import SubmissionSerializer
 from .judge import judge_python_submission
+from .run_serializers import RunCodeSerializer
 from levels.models import Level
 from progression.models import PlayerProgress, LevelCompletion
 
@@ -86,3 +87,46 @@ class SubmissionCreateView(generics.CreateAPIView):
         response_data["judge_result"] = judge_result
 
         return Response(response_data, status=status.HTTP_201_CREATED)
+    
+class RunCodeView(generics.GenericAPIView):
+    serializer_class = RunCodeSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        level_id = serializer.validated_data["level"]
+        language = serializer.validated_data["language"]
+        code = serializer.validated_data["code"]
+
+        if language != "python":
+            return Response(
+                {"detail": "Only Python is supported right now."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        try:
+            level = Level.objects.get(id=level_id)
+        except Level.DoesNotExist:
+            return Response(
+                {"detail": "Level not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        sample_test_cases = level.test_cases.filter(is_hidden=False).order_by("order")
+
+        judge_result = judge_python_submission(
+            code=code,
+            function_name=level.function_name,
+            test_cases=sample_test_cases,
+        )
+
+        total_sample_tests = sample_test_cases.count()
+
+        response_data = {
+            "verdict": judge_result["verdict"],
+            "judge_result": judge_result,
+            "total_sample_tests": total_sample_tests,
+        }
+
+        return Response(response_data, status=status.HTTP_200_OK)
